@@ -1,0 +1,22 @@
+services:
+  farmabi-db:
+    image: postgres:16.10-alpine
+    container_name: farmabi-db
+    environment:
+      POSTGRES_DB: farmabi
+      POSTGRES_USER: farmabi_admin
+      POSTGRES_PASSWORD: ${FARMABI_ADMIN_SENHA:?defina FARMABI_ADMIN_SENHA no .env}
+      FARMABI_LEITURA_SENHA: ${FARMABI_LEITURA_SENHA:?defina FARMABI_LEITURA_SENHA no .env}
+    ports:
+      - "127.0.0.1:${FARMABI_PORTA:-5433}:5432"
+    volumes:
+      - farmabi-dados:/var/lib/postgresql/data
+      - ./db/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U farmabi_admin -d farmabi"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+volumes:
+  farmabi-dados:

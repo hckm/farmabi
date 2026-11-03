@@ -1,2 +1,12 @@
 # Arquivos temporarios do Office
 ~$*
+
+# Segredos locais
+.env
+
+# Power BI Project: cache de dados e configuracoes locais
+**/.pbi/cache.abf
+**/.pbi/localSettings.json
+
+# Python
+__pycache__/
