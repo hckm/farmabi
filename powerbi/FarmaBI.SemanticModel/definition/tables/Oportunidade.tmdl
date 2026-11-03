@@ -1,0 +1,128 @@
+table Oportunidade
+	lineageTag: 3033a2c8-38dd-50e1-83bd-b078cae0d2d7
+
+	column oportunidade_id
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 2839cea6-9010-5275-b86d-134a9017d6b4
+		summarizeBy: none
+		sourceColumn: oportunidade_id
+
+		annotation SummarizationSetBy = User
+
+	column atendimento_id
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 2af389ca-ce1c-5073-aecc-27eecab75dac
+		summarizeBy: none
+		sourceColumn: atendimento_id
+
+		annotation SummarizationSetBy = User
+
+	column cliente_id
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: a746ee37-3fc8-5bb0-b097-7c06f4ffa5cb
+		summarizeBy: none
+		sourceColumn: cliente_id
+
+		annotation SummarizationSetBy = User
+
+	column canal_id
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: fa6750b3-bc44-5e8a-958b-a745dd7819bb
+		summarizeBy: none
+		sourceColumn: canal_id
+
+		annotation SummarizationSetBy = User
+
+	column atendente_id
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: b65f1a63-6728-5f08-9f76-157a3b790bdd
+		summarizeBy: none
+		sourceColumn: atendente_id
+
+		annotation SummarizationSetBy = User
+
+	column criada_em
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: 6ccda111-9175-5ade-8599-dca0b402bc51
+		summarizeBy: none
+		sourceColumn: criada_em
+
+		annotation SummarizationSetBy = User
+
+	column data_envio
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: 906a73b9-8bae-517c-b972-1774d3dabd35
+		summarizeBy: none
+		sourceColumn: data_envio
+
+		annotation SummarizationSetBy = User
+
+	column data_aprovacao
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: 579c9eee-38e6-537c-af4d-1d6bf0a929eb
+		summarizeBy: none
+		sourceColumn: data_aprovacao
+
+		annotation SummarizationSetBy = User
+
+	column status
+		dataType: string
+		lineageTag: ad11c9e2-dd8b-5c26-96d0-487c0b5ac5e7
+		summarizeBy: none
+		sourceColumn: status
+
+		annotation SummarizationSetBy = User
+
+	column motivo_perda
+		dataType: string
+		lineageTag: f7cac8d6-e129-5f6f-95a1-ead0f141115b
+		summarizeBy: none
+		sourceColumn: motivo_perda
+
+		annotation SummarizationSetBy = User
+
+	column pedido_id
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 46286f0e-e989-5155-9d85-072e7bfa2e82
+		summarizeBy: none
+		sourceColumn: pedido_id
+
+		annotation SummarizationSetBy = User
+
+	column data_criacao
+		dataType: dateTime
+		isHidden
+		formatString: dd/mm/yyyy
+		lineageTag: 1abf35d7-e592-562b-a104-ac626e0cafcb
+		summarizeBy: none
+		sourceColumn: data_criacao
+
+		annotation SummarizationSetBy = User
+
+	partition Oportunidade = m
+		mode: import
+		source =
+				let
+				    Fonte = PostgreSQL.Database(Servidor, BancoDados),
+				    Dados = Fonte{[Schema = "public", Item = "fato_oportunidade"]}[Data],
+				    Colunas = Table.SelectColumns(Dados, {"oportunidade_id", "atendimento_id", "cliente_id", "canal_id", "atendente_id", "criada_em", "data_envio", "data_aprovacao", "status", "motivo_perda", "pedido_id", "data_criacao"}),
+				    Tipos = Table.TransformColumnTypes(Colunas, {{"oportunidade_id", Int64.Type}, {"atendimento_id", Int64.Type}, {"cliente_id", Int64.Type}, {"canal_id", Int64.Type}, {"atendente_id", Int64.Type}, {"criada_em", type datetime}, {"data_envio", type datetime}, {"data_aprovacao", type datetime}, {"status", type text}, {"motivo_perda", type text}, {"pedido_id", Int64.Type}, {"data_criacao", type date}})
+				in
+				    Tipos
+
+	annotation PBI_ResultType = Table

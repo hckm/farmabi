@@ -1,0 +1,64 @@
+table Coorte
+	lineageTag: 926f52b0-7140-5ef7-bb32-39349c373e90
+
+	column cliente_id
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 426dfa5a-20a3-5876-99ec-a89a3b6634a7
+		summarizeBy: none
+		sourceColumn: cliente_id
+
+		annotation SummarizationSetBy = User
+
+	column canal_id
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 89117f1b-84ba-57c2-8a6d-783f14e92435
+		summarizeBy: none
+		sourceColumn: canal_id
+
+		annotation SummarizationSetBy = User
+
+	column data_primeira_compra
+		dataType: dateTime
+		isHidden
+		formatString: dd/mm/yyyy
+		lineageTag: e0b66ecd-e9c1-5db9-8ddc-a13893ba2df8
+		summarizeBy: none
+		sourceColumn: data_primeira_compra
+
+		annotation SummarizationSetBy = User
+
+	column mes_coorte
+		dataType: dateTime
+		formatString: mmm/yyyy
+		lineageTag: 12db9e6e-1dd3-5308-9074-92191b7bc58f
+		summarizeBy: none
+		sourceColumn: mes_coorte
+
+		annotation SummarizationSetBy = User
+
+	column recomprou_90d
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: c91bd529-26a5-5517-a4ca-1bfd9af2078f
+		summarizeBy: none
+		sourceColumn: recomprou_90d
+
+		annotation SummarizationSetBy = User
+
+	partition Coorte = m
+		mode: import
+		source =
+				let
+				    Fonte = PostgreSQL.Database(Servidor, BancoDados),
+				    Dados = Fonte{[Schema = "public", Item = "vw_coorte_recompra"]}[Data],
+				    Colunas = Table.SelectColumns(Dados, {"cliente_id", "canal_id", "data_primeira_compra", "mes_coorte", "recomprou_90d"}),
+				    Tipos = Table.TransformColumnTypes(Colunas, {{"cliente_id", Int64.Type}, {"canal_id", Int64.Type}, {"data_primeira_compra", type date}, {"mes_coorte", type date}, {"recomprou_90d", Int64.Type}})
+				in
+				    Tipos
+
+	annotation PBI_ResultType = Table

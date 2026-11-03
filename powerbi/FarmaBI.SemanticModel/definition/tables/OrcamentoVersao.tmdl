@@ -1,0 +1,71 @@
+table OrcamentoVersao
+	lineageTag: 8092afe0-5242-5166-93c6-fd18522f1933
+
+	column orcamento_versao_id
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 13ab5813-b559-5907-8529-93321dcb1da9
+		summarizeBy: none
+		sourceColumn: orcamento_versao_id
+
+		annotation SummarizationSetBy = User
+
+	column oportunidade_id
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 68e55cf3-f493-522c-93a3-b6a964300c0a
+		summarizeBy: none
+		sourceColumn: oportunidade_id
+
+		annotation SummarizationSetBy = User
+
+	column versao
+		dataType: int64
+		formatString: 0
+		lineageTag: a6e795bb-3602-58dd-bc65-9bce3f3e7e41
+		summarizeBy: none
+		sourceColumn: versao
+
+		annotation SummarizationSetBy = User
+
+	column criada_em
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: 2da52cf9-fb20-5e35-a4e7-548a745703ca
+		summarizeBy: none
+		sourceColumn: criada_em
+
+		annotation SummarizationSetBy = User
+
+	column valor
+		dataType: decimal
+		isHidden
+		formatString: "R$ "#,##0.00
+		lineageTag: 2e80e76c-e7ff-5dbe-b6c8-608c4062a92b
+		summarizeBy: none
+		sourceColumn: valor
+
+		annotation SummarizationSetBy = User
+
+	column vigente
+		dataType: boolean
+		lineageTag: 9afbdda6-ffd4-5598-8060-9f3777da1f68
+		summarizeBy: none
+		sourceColumn: vigente
+
+		annotation SummarizationSetBy = User
+
+	partition OrcamentoVersao = m
+		mode: import
+		source =
+				let
+				    Fonte = PostgreSQL.Database(Servidor, BancoDados),
+				    Dados = Fonte{[Schema = "public", Item = "fato_orcamento_versao"]}[Data],
+				    Colunas = Table.SelectColumns(Dados, {"orcamento_versao_id", "oportunidade_id", "versao", "criada_em", "valor", "vigente"}),
+				    Tipos = Table.TransformColumnTypes(Colunas, {{"orcamento_versao_id", Int64.Type}, {"oportunidade_id", Int64.Type}, {"versao", Int64.Type}, {"criada_em", type datetime}, {"valor", Currency.Type}, {"vigente", type logical}})
+				in
+				    Tipos
+
+	annotation PBI_ResultType = Table

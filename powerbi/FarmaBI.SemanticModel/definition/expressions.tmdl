@@ -1,0 +1,9 @@
+expression Servidor = "localhost:5433" meta [IsParameterQuery = true, Type = "Text", IsParameterQueryRequired = true]
+	lineageTag: 2f6afb3c-9378-5204-92d8-4baaf9163e15
+
+	annotation PBI_ResultType = Text
+
+expression BancoDados = "farmabi" meta [IsParameterQuery = true, Type = "Text", IsParameterQueryRequired = true]
+	lineageTag: e27bf0a2-27de-5943-833a-e24183bfbafc
+
+	annotation PBI_ResultType = Text

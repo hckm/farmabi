@@ -1,0 +1,120 @@
+table Atendimento
+	lineageTag: 67d8cffa-79a9-59ba-be71-d2295113c399
+
+	column atendimento_id
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: c301012c-1b92-5940-b16f-9d0277cbfdbf
+		summarizeBy: none
+		sourceColumn: atendimento_id
+
+		annotation SummarizationSetBy = User
+
+	column cliente_id
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 577e815a-1139-597f-aad2-168d436361b5
+		summarizeBy: none
+		sourceColumn: cliente_id
+
+		annotation SummarizationSetBy = User
+
+	column canal_id
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 20a69a26-6fe6-5ba6-9425-43ac06ae07af
+		summarizeBy: none
+		sourceColumn: canal_id
+
+		annotation SummarizationSetBy = User
+
+	column atendente_id
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: d0dee097-38d7-56df-9321-c2664404a362
+		summarizeBy: none
+		sourceColumn: atendente_id
+
+		annotation SummarizationSetBy = User
+
+	column iniciado_em
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: 806a2d96-07fc-516b-a9a2-29d80ad97084
+		summarizeBy: none
+		sourceColumn: iniciado_em
+
+		annotation SummarizationSetBy = User
+
+	column primeira_resposta_humana_em
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: e300771a-e20a-5432-80dc-7e3c4c2d630d
+		summarizeBy: none
+		sourceColumn: primeira_resposta_humana_em
+
+		annotation SummarizationSetBy = User
+
+	column encerrado_em
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: 97b9b161-d6e8-5884-b331-d189fb73da63
+		summarizeBy: none
+		sourceColumn: encerrado_em
+
+		annotation SummarizationSetBy = User
+
+	column transferencias
+		dataType: int64
+		formatString: 0
+		lineageTag: b97e9d53-7a39-52e1-aae3-c694726c8910
+		summarizeBy: none
+		sourceColumn: transferencias
+
+		annotation SummarizationSetBy = User
+
+	column avaliacao
+		dataType: int64
+		formatString: 0
+		lineageTag: 7dbcd6e9-2423-55bd-a851-3a154553146a
+		summarizeBy: none
+		sourceColumn: avaliacao
+
+		annotation SummarizationSetBy = User
+
+	column data_inicio
+		dataType: dateTime
+		isHidden
+		formatString: dd/mm/yyyy
+		lineageTag: db42fb20-0043-509d-8cdb-6fb117252d62
+		summarizeBy: none
+		sourceColumn: data_inicio
+
+		annotation SummarizationSetBy = User
+
+	column segundos_primeira_resposta
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: b393392b-f39f-5849-8079-22e653d5c59d
+		summarizeBy: none
+		sourceColumn: segundos_primeira_resposta
+
+		annotation SummarizationSetBy = User
+
+	partition Atendimento = m
+		mode: import
+		source =
+				let
+				    Fonte = PostgreSQL.Database(Servidor, BancoDados),
+				    Dados = Fonte{[Schema = "public", Item = "fato_atendimento"]}[Data],
+				    Colunas = Table.SelectColumns(Dados, {"atendimento_id", "cliente_id", "canal_id", "atendente_id", "iniciado_em", "primeira_resposta_humana_em", "encerrado_em", "transferencias", "avaliacao", "data_inicio", "segundos_primeira_resposta"}),
+				    Tipos = Table.TransformColumnTypes(Colunas, {{"atendimento_id", Int64.Type}, {"cliente_id", Int64.Type}, {"canal_id", Int64.Type}, {"atendente_id", Int64.Type}, {"iniciado_em", type datetime}, {"primeira_resposta_humana_em", type datetime}, {"encerrado_em", type datetime}, {"transferencias", Int64.Type}, {"avaliacao", Int64.Type}, {"data_inicio", type date}, {"segundos_primeira_resposta", Int64.Type}})
+				in
+				    Tipos
+
+	annotation PBI_ResultType = Table

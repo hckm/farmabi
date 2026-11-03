@@ -1,0 +1,51 @@
+table Cliente
+	lineageTag: f5e5a256-7afc-54de-8f57-861f667b3fd4
+
+	column cliente_id
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: d0a05417-5a0d-5f94-b5ee-0d7f7767b8d1
+		summarizeBy: none
+		sourceColumn: cliente_id
+
+		annotation SummarizationSetBy = User
+
+	column codigo
+		dataType: string
+		lineageTag: 23d50925-c87b-552c-bb5d-5932c24e9c36
+		summarizeBy: none
+		sourceColumn: codigo
+
+		annotation SummarizationSetBy = User
+
+	column data_cadastro
+		dataType: dateTime
+		formatString: dd/mm/yyyy
+		lineageTag: 6dd63c81-f12b-5061-a17e-049b7a1eff29
+		summarizeBy: none
+		sourceColumn: data_cadastro
+
+		annotation SummarizationSetBy = User
+
+	column data_primeira_compra
+		dataType: dateTime
+		formatString: dd/mm/yyyy
+		lineageTag: 2ea79f95-2a2e-5930-95be-4dc2b15c741c
+		summarizeBy: none
+		sourceColumn: data_primeira_compra
+
+		annotation SummarizationSetBy = User
+
+	partition Cliente = m
+		mode: import
+		source =
+				let
+				    Fonte = PostgreSQL.Database(Servidor, BancoDados),
+				    Dados = Fonte{[Schema = "public", Item = "dim_cliente"]}[Data],
+				    Colunas = Table.SelectColumns(Dados, {"cliente_id", "codigo", "data_cadastro", "data_primeira_compra"}),
+				    Tipos = Table.TransformColumnTypes(Colunas, {{"cliente_id", Int64.Type}, {"codigo", type text}, {"data_cadastro", type date}, {"data_primeira_compra", type date}})
+				in
+				    Tipos
+
+	annotation PBI_ResultType = Table

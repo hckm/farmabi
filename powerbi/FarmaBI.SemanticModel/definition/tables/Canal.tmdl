@@ -1,0 +1,53 @@
+table Canal
+	lineageTag: 03b6992f-11da-57ec-93ca-f8022c2d0a67
+
+	column canal_id
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: d30995ba-e2d7-5d85-acde-509c5d5f950f
+		summarizeBy: none
+		sourceColumn: canal_id
+
+		annotation SummarizationSetBy = User
+
+	column nome
+		dataType: string
+		lineageTag: b8d22dac-18b3-563c-b2cf-b9f2f19a123a
+		summarizeBy: none
+		sourceColumn: nome
+		sortByColumn: ordem
+
+		annotation SummarizationSetBy = User
+
+	column ordem
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 63b116ce-e836-534d-a8ff-ae69b89c7d24
+		summarizeBy: none
+		sourceColumn: ordem
+
+		annotation SummarizationSetBy = User
+
+	column cor
+		dataType: string
+		isHidden
+		lineageTag: 56a9b97e-1240-509c-a69c-f8e9a4c537dc
+		summarizeBy: none
+		sourceColumn: cor
+
+		annotation SummarizationSetBy = User
+
+	partition Canal = m
+		mode: import
+		source =
+				let
+				    Fonte = PostgreSQL.Database(Servidor, BancoDados),
+				    Dados = Fonte{[Schema = "public", Item = "dim_canal"]}[Data],
+				    Colunas = Table.SelectColumns(Dados, {"canal_id", "nome", "ordem", "cor"}),
+				    Tipos = Table.TransformColumnTypes(Colunas, {{"canal_id", Int64.Type}, {"nome", type text}, {"ordem", Int64.Type}, {"cor", type text}})
+				in
+				    Tipos
+
+	annotation PBI_ResultType = Table

@@ -1,0 +1,54 @@
+table FaixaFrequencia
+	lineageTag: e28c84c2-29b6-5ef4-8d66-ca5c66dc48ad
+
+	column faixa_id
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 40256088-ad1c-531a-ae47-bdfe5c5e9516
+		summarizeBy: none
+		sourceColumn: faixa_id
+
+		annotation SummarizationSetBy = User
+
+	column faixa
+		dataType: string
+		lineageTag: dc7c4898-7f0d-5e38-90dc-b5c93f50aad3
+		summarizeBy: none
+		sourceColumn: faixa
+		sortByColumn: faixa_id
+
+		annotation SummarizationSetBy = User
+
+	column compras_min
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 1da648dd-2eda-5853-9c29-8b01aea4da5e
+		summarizeBy: none
+		sourceColumn: compras_min
+
+		annotation SummarizationSetBy = User
+
+	column compras_max
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: ba860020-f70a-52dc-af6b-0a0c676f30dc
+		summarizeBy: none
+		sourceColumn: compras_max
+
+		annotation SummarizationSetBy = User
+
+	partition FaixaFrequencia = m
+		mode: import
+		source =
+				let
+				    Fonte = PostgreSQL.Database(Servidor, BancoDados),
+				    Dados = Fonte{[Schema = "public", Item = "aux_faixa_frequencia"]}[Data],
+				    Colunas = Table.SelectColumns(Dados, {"faixa_id", "faixa", "compras_min", "compras_max"}),
+				    Tipos = Table.TransformColumnTypes(Colunas, {{"faixa_id", Int64.Type}, {"faixa", type text}, {"compras_min", Int64.Type}, {"compras_max", Int64.Type}})
+				in
+				    Tipos
+
+	annotation PBI_ResultType = Table

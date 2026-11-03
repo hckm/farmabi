@@ -1,0 +1,29 @@
+model Model
+	culture: pt-BR
+	defaultPowerBIDataSourceVersion: powerBI_V3
+	discourageImplicitMeasures
+	sourceQueryCulture: pt-BR
+	dataAccessOptions
+		legacyRedirects
+		returnErrorValuesAsNull
+
+annotation __PBI_TimeIntelligenceEnabled = 0
+
+annotation PBI_QueryOrder = ["Servidor", "BancoDados", "Calendario", "Canal", "Atendente", "Cliente", "Pedido", "PedidoItem", "Oportunidade", "OrcamentoVersao", "Atendimento", "Insumo", "Estoque", "InsumoPosicao", "Coorte", "EtapaFunil", "FaixaFrequencia"]
+
+ref table Calendario
+ref table Canal
+ref table Atendente
+ref table Cliente
+ref table Pedido
+ref table PedidoItem
+ref table Oportunidade
+ref table OrcamentoVersao
+ref table Atendimento
+ref table Insumo
+ref table Estoque
+ref table InsumoPosicao
+ref table Coorte
+ref table EtapaFunil
+ref table FaixaFrequencia
+ref table Medidas

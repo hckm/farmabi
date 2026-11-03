@@ -1,0 +1,33 @@
+table Atendente
+	lineageTag: 789ca4b6-e350-5ec1-b2fb-6add57361460
+
+	column atendente_id
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 844a7556-d46c-5ec9-9ea5-2e1df3e74b82
+		summarizeBy: none
+		sourceColumn: atendente_id
+
+		annotation SummarizationSetBy = User
+
+	column nome
+		dataType: string
+		lineageTag: 1ac9f6be-1f5f-516d-bb38-49d0b81fb26f
+		summarizeBy: none
+		sourceColumn: nome
+
+		annotation SummarizationSetBy = User
+
+	partition Atendente = m
+		mode: import
+		source =
+				let
+				    Fonte = PostgreSQL.Database(Servidor, BancoDados),
+				    Dados = Fonte{[Schema = "public", Item = "dim_atendente"]}[Data],
+				    Colunas = Table.SelectColumns(Dados, {"atendente_id", "nome"}),
+				    Tipos = Table.TransformColumnTypes(Colunas, {{"atendente_id", Int64.Type}, {"nome", type text}})
+				in
+				    Tipos
+
+	annotation PBI_ResultType = Table

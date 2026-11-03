@@ -1,0 +1,67 @@
+relationship 459eb6c3-9bcc-5df2-9c47-d426ebe6cc09
+	fromColumn: Pedido.data_venda
+	toColumn: Calendario.data
+
+relationship f006526a-21ed-5fb1-a5c8-b83580a27e63
+	fromColumn: Oportunidade.data_criacao
+	toColumn: Calendario.data
+
+relationship c343d5c3-b176-5afa-9172-547afeddf86d
+	fromColumn: Atendimento.data_inicio
+	toColumn: Calendario.data
+
+relationship efceb411-f3c2-5de1-8b58-d7869dc6b9b8
+	fromColumn: Estoque.data_posicao
+	toColumn: Calendario.data
+
+relationship 12757bbc-a555-5c37-9bfd-66029868b86b
+	fromColumn: InsumoPosicao.data_posicao
+	toColumn: Calendario.data
+
+relationship fbbd8de4-2db7-5e24-89f4-d5eec8ff11c3
+	fromColumn: Pedido.canal_id
+	toColumn: Canal.canal_id
+
+relationship ee5e9047-12e8-5b87-9268-f9347298d185
+	fromColumn: Oportunidade.canal_id
+	toColumn: Canal.canal_id
+
+relationship abe261bd-41b9-5394-aaed-4c30e07f1515
+	fromColumn: Atendimento.canal_id
+	toColumn: Canal.canal_id
+
+relationship 95b94e85-22d8-5f81-88ef-db9ae229e6f5
+	fromColumn: Coorte.canal_id
+	toColumn: Canal.canal_id
+
+relationship 1a4ecf85-ae82-589e-87e3-f652828f027d
+	fromColumn: Pedido.cliente_id
+	toColumn: Cliente.cliente_id
+
+relationship 54050cc7-63ee-51d3-be3d-024271dc71d1
+	fromColumn: Pedido.atendente_id
+	toColumn: Atendente.atendente_id
+
+relationship ef6ab112-1e7c-5039-9aee-d98f153f18fc
+	fromColumn: Oportunidade.atendente_id
+	toColumn: Atendente.atendente_id
+
+relationship e5f9e4aa-8c66-5b2e-b9cd-465d91fb8f25
+	fromColumn: Atendimento.atendente_id
+	toColumn: Atendente.atendente_id
+
+relationship a6c6d787-425f-59cb-ac89-c4bc8e7fbbd7
+	fromColumn: PedidoItem.pedido_id
+	toColumn: Pedido.pedido_id
+
+relationship 9dbdb4a2-2757-547b-a7d8-1e049423fd45
+	fromColumn: OrcamentoVersao.oportunidade_id
+	toColumn: Oportunidade.oportunidade_id
+
+relationship 257b28e0-0fd4-5942-be23-22ce4b632e4c
+	fromColumn: Estoque.insumo_id
+	toColumn: Insumo.insumo_id
+
+relationship 899f2d43-f85b-5416-b83a-0a037152066a
+	fromColumn: InsumoPosicao.insumo_id
+	toColumn: Insumo.insumo_id

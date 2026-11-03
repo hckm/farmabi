@@ -1,0 +1,79 @@
+table PedidoItem
+	lineageTag: 57b71770-fa5b-578c-860a-861629de708e
+
+	column pedido_item_id
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 101b0a67-0b96-5d73-9ceb-232f0d725ebc
+		summarizeBy: none
+		sourceColumn: pedido_item_id
+
+		annotation SummarizationSetBy = User
+
+	column pedido_id
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 80f2a6f1-ec98-596c-bdf0-34873e44a776
+		summarizeBy: none
+		sourceColumn: pedido_id
+
+		annotation SummarizationSetBy = User
+
+	column formula_codigo
+		dataType: string
+		lineageTag: fdcfc4b8-28b4-5945-b18d-729e94a92a55
+		summarizeBy: none
+		sourceColumn: formula_codigo
+
+		annotation SummarizationSetBy = User
+
+	column categoria_formula
+		dataType: string
+		lineageTag: f290e763-c0be-5ff4-a127-0122cb9f354e
+		summarizeBy: none
+		sourceColumn: categoria_formula
+
+		annotation SummarizationSetBy = User
+
+	column forma_farmaceutica
+		dataType: string
+		lineageTag: b560c773-d0bd-5583-a3f9-e78604ab9ccc
+		summarizeBy: none
+		sourceColumn: forma_farmaceutica
+
+		annotation SummarizationSetBy = User
+
+	column quantidade
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 36ca6352-0a15-5137-bf0c-8ffe1caa25e3
+		summarizeBy: none
+		sourceColumn: quantidade
+
+		annotation SummarizationSetBy = User
+
+	column valor_liquido
+		dataType: decimal
+		isHidden
+		formatString: "R$ "#,##0.00
+		lineageTag: ef349fe6-8709-5d0e-8608-7cf7a1f485ce
+		summarizeBy: none
+		sourceColumn: valor_liquido
+
+		annotation SummarizationSetBy = User
+
+	partition PedidoItem = m
+		mode: import
+		source =
+				let
+				    Fonte = PostgreSQL.Database(Servidor, BancoDados),
+				    Dados = Fonte{[Schema = "public", Item = "fato_pedido_item"]}[Data],
+				    Colunas = Table.SelectColumns(Dados, {"pedido_item_id", "pedido_id", "formula_codigo", "categoria_formula", "forma_farmaceutica", "quantidade", "valor_liquido"}),
+				    Tipos = Table.TransformColumnTypes(Colunas, {{"pedido_item_id", Int64.Type}, {"pedido_id", Int64.Type}, {"formula_codigo", type text}, {"categoria_formula", type text}, {"forma_farmaceutica", type text}, {"quantidade", Int64.Type}, {"valor_liquido", Currency.Type}})
+				in
+				    Tipos
+
+	annotation PBI_ResultType = Table

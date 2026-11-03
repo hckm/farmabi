@@ -1,0 +1,58 @@
+table Insumo
+	lineageTag: 9405341c-cb4a-54a6-8648-31cf877f8814
+
+	column insumo_id
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 9256be21-5fdb-52d2-a647-2e808abec4eb
+		summarizeBy: none
+		sourceColumn: insumo_id
+
+		annotation SummarizationSetBy = User
+
+	column descricao
+		dataType: string
+		lineageTag: 2ddbecee-d6ff-5b1c-869f-f657b3208b77
+		summarizeBy: none
+		sourceColumn: descricao
+
+		annotation SummarizationSetBy = User
+
+	column categoria
+		dataType: string
+		lineageTag: ffeba284-d6c3-58c3-b8d7-243f5d173414
+		summarizeBy: none
+		sourceColumn: categoria
+
+		annotation SummarizationSetBy = User
+
+	column unidade_medida
+		dataType: string
+		lineageTag: c58758ec-57f4-53db-98b2-03a95c7ad8db
+		summarizeBy: none
+		sourceColumn: unidade_medida
+
+		annotation SummarizationSetBy = User
+
+	column estoque_minimo
+		dataType: double
+		formatString: #,##0.###
+		lineageTag: e4b125a0-fae1-5f5e-998c-e31c5a389ce6
+		summarizeBy: none
+		sourceColumn: estoque_minimo
+
+		annotation SummarizationSetBy = User
+
+	partition Insumo = m
+		mode: import
+		source =
+				let
+				    Fonte = PostgreSQL.Database(Servidor, BancoDados),
+				    Dados = Fonte{[Schema = "public", Item = "dim_insumo"]}[Data],
+				    Colunas = Table.SelectColumns(Dados, {"insumo_id", "descricao", "categoria", "unidade_medida", "estoque_minimo"}),
+				    Tipos = Table.TransformColumnTypes(Colunas, {{"insumo_id", Int64.Type}, {"descricao", type text}, {"categoria", type text}, {"unidade_medida", type text}, {"estoque_minimo", type number}})
+				in
+				    Tipos
+
+	annotation PBI_ResultType = Table

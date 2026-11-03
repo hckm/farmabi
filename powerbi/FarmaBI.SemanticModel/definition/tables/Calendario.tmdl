@@ -1,0 +1,93 @@
+table Calendario
+	lineageTag: 36c27bc1-4b2a-5a92-9800-4a0cde451a5e
+	dataCategory: Time
+
+	column data
+		dataType: dateTime
+		isKey
+		formatString: dd/mm/yyyy
+		lineageTag: 33e2c22d-ff40-5dd1-be50-3195ec2cef31
+		summarizeBy: none
+		sourceColumn: data
+
+		annotation SummarizationSetBy = User
+
+	column ano
+		dataType: int64
+		formatString: 0
+		lineageTag: c2b3cfad-de9b-5519-b84c-0fc02a16b9f5
+		summarizeBy: none
+		sourceColumn: ano
+
+		annotation SummarizationSetBy = User
+
+	column mes
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: c54c8067-512d-5d67-929f-485013c7b6a0
+		summarizeBy: none
+		sourceColumn: mes
+
+		annotation SummarizationSetBy = User
+
+	column inicio_mes
+		dataType: dateTime
+		isHidden
+		formatString: dd/mm/yyyy
+		lineageTag: b33d7e5b-2789-5220-ba1c-cd5309e436cf
+		summarizeBy: none
+		sourceColumn: inicio_mes
+
+		annotation SummarizationSetBy = User
+
+	column fim_mes
+		dataType: dateTime
+		isHidden
+		formatString: dd/mm/yyyy
+		lineageTag: e3d49507-4023-57e4-9a09-ace5924ae661
+		summarizeBy: none
+		sourceColumn: fim_mes
+
+		annotation SummarizationSetBy = User
+
+	column mes_ano
+		dataType: string
+		lineageTag: 9060d08f-2df8-5c0d-8296-92bed88959f4
+		summarizeBy: none
+		sourceColumn: mes_ano
+		sortByColumn: mes_ano_ordem
+
+		annotation SummarizationSetBy = User
+
+	column mes_ano_ordem
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 060f5a8d-9b84-56fa-ad2d-b131549871d5
+		summarizeBy: none
+		sourceColumn: mes_ano_ordem
+
+		annotation SummarizationSetBy = User
+
+	column periodo_analise
+		dataType: boolean
+		isHidden
+		lineageTag: 87da580b-8b23-565a-b565-46840dd23604
+		summarizeBy: none
+		sourceColumn: periodo_analise
+
+		annotation SummarizationSetBy = User
+
+	partition Calendario = m
+		mode: import
+		source =
+				let
+				    Fonte = PostgreSQL.Database(Servidor, BancoDados),
+				    Dados = Fonte{[Schema = "public", Item = "dim_calendario"]}[Data],
+				    Colunas = Table.SelectColumns(Dados, {"data", "ano", "mes", "inicio_mes", "fim_mes", "mes_ano", "mes_ano_ordem", "periodo_analise"}),
+				    Tipos = Table.TransformColumnTypes(Colunas, {{"data", type date}, {"ano", Int64.Type}, {"mes", Int64.Type}, {"inicio_mes", type date}, {"fim_mes", type date}, {"mes_ano", type text}, {"mes_ano_ordem", Int64.Type}, {"periodo_analise", type logical}})
+				in
+				    Tipos
+
+	annotation PBI_ResultType = Table

@@ -1,0 +1,43 @@
+table EtapaFunil
+	lineageTag: 51a0e8b2-b47f-52f8-8747-17a5a5856274
+
+	column etapa_id
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: ef4dcc80-a61a-539a-8477-8fd4baa3b7a1
+		summarizeBy: none
+		sourceColumn: etapa_id
+
+		annotation SummarizationSetBy = User
+
+	column etapa
+		dataType: string
+		lineageTag: 4a37aa89-d63f-59c2-b9c7-b30bef7834eb
+		summarizeBy: none
+		sourceColumn: etapa
+		sortByColumn: etapa_id
+
+		annotation SummarizationSetBy = User
+
+	column cor
+		dataType: string
+		isHidden
+		lineageTag: a72d4100-afad-524c-82b3-f6f1c326bcab
+		summarizeBy: none
+		sourceColumn: cor
+
+		annotation SummarizationSetBy = User
+
+	partition EtapaFunil = m
+		mode: import
+		source =
+				let
+				    Fonte = PostgreSQL.Database(Servidor, BancoDados),
+				    Dados = Fonte{[Schema = "public", Item = "aux_etapa_funil"]}[Data],
+				    Colunas = Table.SelectColumns(Dados, {"etapa_id", "etapa", "cor"}),
+				    Tipos = Table.TransformColumnTypes(Colunas, {{"etapa_id", Int64.Type}, {"etapa", type text}, {"cor", type text}})
+				in
+				    Tipos
+
+	annotation PBI_ResultType = Table

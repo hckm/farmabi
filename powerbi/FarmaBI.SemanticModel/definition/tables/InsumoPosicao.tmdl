@@ -1,0 +1,61 @@
+table InsumoPosicao
+	lineageTag: 1c437661-c3a1-5c0a-96a8-64a51c531d0d
+
+	column data_posicao
+		dataType: dateTime
+		isHidden
+		formatString: dd/mm/yyyy
+		lineageTag: b4c78d1a-0da7-52d0-9e13-b440cc645ae1
+		summarizeBy: none
+		sourceColumn: data_posicao
+
+		annotation SummarizationSetBy = User
+
+	column insumo_id
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: f8c3b95c-427f-519e-8d75-c287e9fc5e83
+		summarizeBy: none
+		sourceColumn: insumo_id
+
+		annotation SummarizationSetBy = User
+
+	column saldo_disponivel
+		dataType: double
+		formatString: #,##0.###
+		lineageTag: e1955ac8-1c8d-5ac9-8c60-f102cd6a0a06
+		summarizeBy: none
+		sourceColumn: saldo_disponivel
+
+		annotation SummarizationSetBy = User
+
+	column estoque_minimo
+		dataType: double
+		formatString: #,##0.###
+		lineageTag: 2ec59a1d-06c2-5b02-a039-c40b3b0fad21
+		summarizeBy: none
+		sourceColumn: estoque_minimo
+
+		annotation SummarizationSetBy = User
+
+	column abaixo_minimo
+		dataType: boolean
+		lineageTag: b5c33930-1bae-5287-bc89-085af91a3f41
+		summarizeBy: none
+		sourceColumn: abaixo_minimo
+
+		annotation SummarizationSetBy = User
+
+	partition InsumoPosicao = m
+		mode: import
+		source =
+				let
+				    Fonte = PostgreSQL.Database(Servidor, BancoDados),
+				    Dados = Fonte{[Schema = "public", Item = "vw_insumo_posicao"]}[Data],
+				    Colunas = Table.SelectColumns(Dados, {"data_posicao", "insumo_id", "saldo_disponivel", "estoque_minimo", "abaixo_minimo"}),
+				    Tipos = Table.TransformColumnTypes(Colunas, {{"data_posicao", type date}, {"insumo_id", Int64.Type}, {"saldo_disponivel", type number}, {"estoque_minimo", type number}, {"abaixo_minimo", type logical}})
+				in
+				    Tipos
+
+	annotation PBI_ResultType = Table

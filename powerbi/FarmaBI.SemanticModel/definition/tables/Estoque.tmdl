@@ -1,0 +1,161 @@
+table Estoque
+	lineageTag: bf404c13-0222-5900-8844-4e826a9c88f1
+
+	column data_posicao
+		dataType: dateTime
+		formatString: dd/mm/yyyy
+		lineageTag: de74f27e-de02-525a-82c6-dfefc8e8bf14
+		summarizeBy: none
+		sourceColumn: data_posicao
+
+		annotation SummarizationSetBy = User
+
+	column lote_id
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 05af2013-5489-59ef-8956-2d10eed5f531
+		summarizeBy: none
+		sourceColumn: lote_id
+
+		annotation SummarizationSetBy = User
+
+	column lote_codigo
+		dataType: string
+		lineageTag: 08f169ef-21c1-51e5-ad80-89c79b4ef5a4
+		summarizeBy: none
+		sourceColumn: lote_codigo
+
+		annotation SummarizationSetBy = User
+
+	column insumo_id
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 68fb9d8b-5821-5ff8-9396-5927905f4a22
+		summarizeBy: none
+		sourceColumn: insumo_id
+
+		annotation SummarizationSetBy = User
+
+	column deposito
+		dataType: string
+		lineageTag: a71f9a91-ee51-5402-a137-39fd19679ef3
+		summarizeBy: none
+		sourceColumn: deposito
+
+		annotation SummarizationSetBy = User
+
+	column data_validade
+		dataType: dateTime
+		formatString: dd/mm/yyyy
+		lineageTag: 106fcdd6-bc0f-5b15-90ef-5d53e2cdef26
+		summarizeBy: none
+		sourceColumn: data_validade
+
+		annotation SummarizationSetBy = User
+
+	column dias_para_vencer
+		dataType: int64
+		formatString: 0
+		lineageTag: f94cf9b5-8661-5a5a-b49a-e2e78f6bc564
+		summarizeBy: none
+		sourceColumn: dias_para_vencer
+
+		annotation SummarizationSetBy = User
+
+	column faixa_validade
+		dataType: string
+		lineageTag: 90eb80fa-b2dc-5f81-8753-ee85495d2a09
+		summarizeBy: none
+		sourceColumn: faixa_validade
+		sortByColumn: faixa_validade_ordem
+
+		annotation SummarizationSetBy = User
+
+	column faixa_validade_ordem
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: c00e2abc-9156-5d7b-b913-5c566332bb53
+		summarizeBy: none
+		sourceColumn: faixa_validade_ordem
+
+		annotation SummarizationSetBy = User
+
+	column vencido
+		dataType: boolean
+		lineageTag: 59cd2b2e-eb15-5629-8c47-39ef0edc5ccd
+		summarizeBy: none
+		sourceColumn: vencido
+
+		annotation SummarizationSetBy = User
+
+	column saldo_fisico
+		dataType: double
+		formatString: #,##0.###
+		lineageTag: b8a84121-7d38-5667-962a-c0f238b6443a
+		summarizeBy: none
+		sourceColumn: saldo_fisico
+
+		annotation SummarizationSetBy = User
+
+	column saldo_reservado
+		dataType: double
+		formatString: #,##0.###
+		lineageTag: de1ddc1b-00cc-55b3-825f-d2568928bfcb
+		summarizeBy: none
+		sourceColumn: saldo_reservado
+
+		annotation SummarizationSetBy = User
+
+	column saldo_bloqueado
+		dataType: double
+		formatString: #,##0.###
+		lineageTag: d987c641-ccb6-50f4-9630-91820380bd58
+		summarizeBy: none
+		sourceColumn: saldo_bloqueado
+
+		annotation SummarizationSetBy = User
+
+	column saldo_disponivel
+		dataType: double
+		formatString: #,##0.###
+		lineageTag: 2b8e265b-75e5-5352-ac31-0d4523db071b
+		summarizeBy: none
+		sourceColumn: saldo_disponivel
+
+		annotation SummarizationSetBy = User
+
+	column valor_total
+		dataType: decimal
+		isHidden
+		formatString: "R$ "#,##0.00
+		lineageTag: 07d60f26-f246-5400-a58b-2145f9fec663
+		summarizeBy: none
+		sourceColumn: valor_total
+
+		annotation SummarizationSetBy = User
+
+	column custo_unitario
+		dataType: double
+		isHidden
+		formatString: #,##0.0000
+		lineageTag: 68e3f184-6990-5565-a9b9-3bd87132cf43
+		summarizeBy: none
+		sourceColumn: custo_unitario
+
+		annotation SummarizationSetBy = User
+
+	partition Estoque = m
+		mode: import
+		source =
+				let
+				    Fonte = PostgreSQL.Database(Servidor, BancoDados),
+				    Dados = Fonte{[Schema = "public", Item = "vw_saldo_estoque"]}[Data],
+				    Colunas = Table.SelectColumns(Dados, {"data_posicao", "lote_id", "lote_codigo", "insumo_id", "deposito", "data_validade", "dias_para_vencer", "faixa_validade", "faixa_validade_ordem", "vencido", "saldo_fisico", "saldo_reservado", "saldo_bloqueado", "saldo_disponivel", "valor_total", "custo_unitario"}),
+				    Tipos = Table.TransformColumnTypes(Colunas, {{"data_posicao", type date}, {"lote_id", Int64.Type}, {"lote_codigo", type text}, {"insumo_id", Int64.Type}, {"deposito", type text}, {"data_validade", type date}, {"dias_para_vencer", Int64.Type}, {"faixa_validade", type text}, {"faixa_validade_ordem", Int64.Type}, {"vencido", type logical}, {"saldo_fisico", type number}, {"saldo_reservado", type number}, {"saldo_bloqueado", type number}, {"saldo_disponivel", type number}, {"valor_total", Currency.Type}, {"custo_unitario", type number}})
+				in
+				    Tipos
+
+	annotation PBI_ResultType = Table

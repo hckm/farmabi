@@ -1,0 +1,122 @@
+table Pedido
+	lineageTag: 3790e530-3252-5592-82e4-bdaaffca4f49
+
+	column pedido_id
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 2b57e86d-bf37-5e4e-b57c-2d6f3041b6b8
+		summarizeBy: none
+		sourceColumn: pedido_id
+
+		annotation SummarizationSetBy = User
+
+	column cliente_id
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: dd0aeed3-5b4e-5887-9275-619289a190cf
+		summarizeBy: none
+		sourceColumn: cliente_id
+
+		annotation SummarizationSetBy = User
+
+	column canal_id
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 7ac76d7c-a8cc-5255-bcae-de7a4503e79d
+		summarizeBy: none
+		sourceColumn: canal_id
+
+		annotation SummarizationSetBy = User
+
+	column atendente_id
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: cbce293b-d3df-5785-950a-475d95ea9936
+		summarizeBy: none
+		sourceColumn: atendente_id
+
+		annotation SummarizationSetBy = User
+
+	column oportunidade_id
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 4c360e9f-aa5b-5a39-b061-f1974ab0f89e
+		summarizeBy: none
+		sourceColumn: oportunidade_id
+
+		annotation SummarizationSetBy = User
+
+	column data_venda
+		dataType: dateTime
+		formatString: dd/mm/yyyy
+		lineageTag: bdcfc9e2-126a-5d18-92a3-0369a0159774
+		summarizeBy: none
+		sourceColumn: data_venda
+
+		annotation SummarizationSetBy = User
+
+	column status
+		dataType: string
+		lineageTag: a42049c0-be2a-5f9b-906b-38093815c6f6
+		summarizeBy: none
+		sourceColumn: status
+
+		annotation SummarizationSetBy = User
+
+	column valor_bruto
+		dataType: decimal
+		isHidden
+		formatString: "R$ "#,##0.00
+		lineageTag: 4c831f83-762d-5284-90a9-321bd84959eb
+		summarizeBy: none
+		sourceColumn: valor_bruto
+
+		annotation SummarizationSetBy = User
+
+	column desconto
+		dataType: decimal
+		isHidden
+		formatString: "R$ "#,##0.00
+		lineageTag: a05a3ed7-fe5b-520d-afd1-737361691a8e
+		summarizeBy: none
+		sourceColumn: desconto
+
+		annotation SummarizationSetBy = User
+
+	column valor_liquido
+		dataType: decimal
+		isHidden
+		formatString: "R$ "#,##0.00
+		lineageTag: 256ecaaa-be25-57f8-8ce1-9e6d25798b0c
+		summarizeBy: none
+		sourceColumn: valor_liquido
+
+		annotation SummarizationSetBy = User
+
+	column valor_devolvido
+		dataType: decimal
+		isHidden
+		formatString: "R$ "#,##0.00
+		lineageTag: af13b3ed-cc83-51c5-91e6-7c92b5bc544f
+		summarizeBy: none
+		sourceColumn: valor_devolvido
+
+		annotation SummarizationSetBy = User
+
+	partition Pedido = m
+		mode: import
+		source =
+				let
+				    Fonte = PostgreSQL.Database(Servidor, BancoDados),
+				    Dados = Fonte{[Schema = "public", Item = "fato_pedido"]}[Data],
+				    Colunas = Table.SelectColumns(Dados, {"pedido_id", "cliente_id", "canal_id", "atendente_id", "oportunidade_id", "data_venda", "status", "valor_bruto", "desconto", "valor_liquido", "valor_devolvido"}),
+				    Tipos = Table.TransformColumnTypes(Colunas, {{"pedido_id", Int64.Type}, {"cliente_id", Int64.Type}, {"canal_id", Int64.Type}, {"atendente_id", Int64.Type}, {"oportunidade_id", Int64.Type}, {"data_venda", type date}, {"status", type text}, {"valor_bruto", Currency.Type}, {"desconto", Currency.Type}, {"valor_liquido", Currency.Type}, {"valor_devolvido", Currency.Type}})
+				in
+				    Tipos
+
+	annotation PBI_ResultType = Table

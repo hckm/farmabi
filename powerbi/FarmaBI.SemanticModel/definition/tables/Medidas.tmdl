@@ -1,0 +1,248 @@
+table Medidas
+	lineageTag: 229a5a6b-139d-58cb-96ce-cecbc5442139
+
+	measure 'Vendas líquidas' = CALCULATE ( SUM ( Pedido[valor_liquido] ), KEEPFILTERS ( Pedido[status] = "CONFIRMADO" ) )
+		formatString: "R$ "#,##0
+		displayFolder: 1. Executivo
+		lineageTag: 047025eb-e90e-55ca-837a-e0e53cda847e
+
+	measure 'Pedidos vendidos' = CALCULATE ( DISTINCTCOUNT ( Pedido[pedido_id] ), KEEPFILTERS ( Pedido[status] = "CONFIRMADO" ) )
+		formatString: #,##0
+		displayFolder: 1. Executivo
+		lineageTag: 64576eae-5735-59ad-8daa-49c9d52d0395
+
+	measure 'Ticket médio' = DIVIDE ( [Vendas líquidas], [Pedidos vendidos] )
+		formatString: "R$ "#,##0.00
+		displayFolder: 1. Executivo
+		lineageTag: 7720c92b-7388-5eec-a1cc-991e30b5d7a3
+
+	measure 'Vendas mês anterior' = CALCULATE ( [Vendas líquidas], DATEADD ( Calendario[data], -1, MONTH ) )
+		formatString: "R$ "#,##0
+		displayFolder: 1. Executivo
+		lineageTag: bcb23044-0b4a-57cb-94e6-05bf0513e4fa
+
+	measure 'Crescimento %' =
+			VAR anterior = [Vendas mês anterior]
+			RETURN IF ( NOT ISBLANK ( anterior ), DIVIDE ( [Vendas líquidas], anterior ) - 1 )
+		formatString: +0.0%;-0.0%;0.0%
+		displayFolder: 1. Executivo
+		lineageTag: 62944ff6-ab54-5f05-b26c-c5813684ca56
+
+	measure Crescimento =
+			VAR c = [Crescimento %]
+			RETURN IF ( ISBLANK ( c ), "N/D", FORMAT ( c, "+0.0%;-0.0%;0.0%" ) )
+		displayFolder: 1. Executivo
+		lineageTag: 2ab771c6-8e5e-5f8b-8c02-bed3d17d7061
+
+	measure 'Participação %' = DIVIDE ( [Vendas líquidas], CALCULATE ( [Vendas líquidas], REMOVEFILTERS ( Canal ) ) )
+		formatString: 0.0%
+		displayFolder: 1. Executivo
+		lineageTag: 8a97c1ce-f211-5756-8340-20bb8a0dc410
+
+	measure 'Fórmulas vendidas' = CALCULATE ( COUNTROWS ( PedidoItem ), KEEPFILTERS ( Pedido[status] = "CONFIRMADO" ) )
+		formatString: #,##0
+		displayFolder: 1. Executivo
+		lineageTag: 28db065f-67a5-5150-95f8-da0d834fbc78
+
+	measure 'Pedidos cancelados' = CALCULATE ( COUNTROWS ( Pedido ), KEEPFILTERS ( Pedido[status] = "CANCELADO" ) )
+		formatString: #,##0
+		displayFolder: 1. Executivo
+		lineageTag: e046f328-343a-52ba-893a-65d84bae8ee3
+
+	measure 'Pedidos devolvidos' = CALCULATE ( COUNTROWS ( Pedido ), KEEPFILTERS ( Pedido[status] = "DEVOLVIDO" ) )
+		formatString: #,##0
+		displayFolder: 1. Executivo
+		lineageTag: 12bb8f66-3129-5e8a-86d0-48f42ca176fe
+
+	measure 'Valor devolvido' = SUM ( Pedido[valor_devolvido] )
+		formatString: "R$ "#,##0
+		displayFolder: 1. Executivo
+		lineageTag: 34af74e9-e8cd-593b-9387-63016e1a5eac
+
+	measure 'Descontos concedidos' = CALCULATE ( SUM ( Pedido[desconto] ), KEEPFILTERS ( Pedido[status] = "CONFIRMADO" ) )
+		formatString: "R$ "#,##0
+		displayFolder: 1. Executivo
+		lineageTag: 68bac73d-4f52-50a0-9a0b-305931e53964
+
+	measure 'Orçamentos gerados' = DISTINCTCOUNT ( Oportunidade[oportunidade_id] )
+		formatString: #,##0
+		displayFolder: 2. Orçamentos
+		lineageTag: 71edd7a7-8812-547a-9aa3-786480605d96
+
+	measure Convertidos = CALCULATE ( [Orçamentos gerados], KEEPFILTERS ( Oportunidade[status] = "CONVERTIDA" ) )
+		formatString: #,##0
+		displayFolder: 2. Orçamentos
+		lineageTag: 428fb640-6541-5e4d-a601-f2818437489d
+
+	measure Perdidos = CALCULATE ( [Orçamentos gerados], KEEPFILTERS ( Oportunidade[status] = "PERDIDA" ) )
+		formatString: #,##0
+		displayFolder: 2. Orçamentos
+		lineageTag: fe1db952-20cd-51e1-bc7e-8f887d8cceb7
+
+	measure 'Em negociação' = CALCULATE ( [Orçamentos gerados], KEEPFILTERS ( Oportunidade[status] = "PENDENTE" ) )
+		formatString: #,##0
+		displayFolder: 2. Orçamentos
+		lineageTag: 45dbd948-9475-5278-b443-5304a7e7aef0
+
+	measure 'Taxa de conversão' = DIVIDE ( [Convertidos], [Orçamentos gerados] )
+		formatString: 0.0%
+		displayFolder: 2. Orçamentos
+		lineageTag: 94d4b58d-b721-5446-ba32-df6204c9a66d
+
+	measure 'Taxa de perda' = DIVIDE ( [Perdidos], [Perdidos] + [Convertidos] )
+		formatString: 0.0%
+		displayFolder: 2. Orçamentos
+		lineageTag: e83207f9-7b69-556c-bce6-959c11a696a3
+
+	measure 'Quantidade na etapa' =
+			SWITCH ( SELECTEDVALUE ( EtapaFunil[etapa_id] ),
+			    1, [Orçamentos gerados],
+			    2, [Convertidos],
+			    3, [Perdidos],
+			    4, [Em negociação]
+			)
+		formatString: #,##0
+		displayFolder: 2. Orçamentos
+		lineageTag: 470bce45-d765-5670-9a13-12497ef03210
+
+	measure 'Horas até a 1ª cotação' = AVERAGEX ( Oportunidade, DATEDIFF ( Oportunidade[criada_em], Oportunidade[data_envio], MINUTE ) ) / 60
+		formatString: 0.0" h"
+		displayFolder: 2. Orçamentos
+		lineageTag: 4d64beb9-953b-56ac-b981-79f8273d9a83
+
+	measure 'Clientes compradores' = CALCULATE ( DISTINCTCOUNT ( Pedido[cliente_id] ), KEEPFILTERS ( Pedido[status] = "CONFIRMADO" ) )
+		formatString: #,##0
+		displayFolder: 3. Clientes
+		lineageTag: 34ab8a25-e4cb-5f46-805b-fc99d98adcca
+
+	measure 'Novos clientes' =
+			VAR inicio = MIN ( Calendario[data] )
+			VAR fim = MAX ( Calendario[data] )
+			RETURN
+			    CALCULATE (
+			        [Clientes compradores],
+			        FILTER ( VALUES ( Cliente[data_primeira_compra] ),
+			            Cliente[data_primeira_compra] >= inicio && Cliente[data_primeira_compra] <= fim )
+			    )
+		formatString: #,##0
+		displayFolder: 3. Clientes
+		lineageTag: 28d1a68e-84c7-55ba-9f3c-b0ea501dfb9a
+
+	measure 'Clientes recorrentes' =
+			VAR c = [Clientes compradores]
+			RETURN IF ( NOT ISBLANK ( c ), c - [Novos clientes] )
+		formatString: #,##0
+		displayFolder: 3. Clientes
+		lineageTag: 1cf10a52-a99a-5c5b-9b10-b7d06317120c
+
+	measure 'Recompra 90d %' =
+			VAR mes = MAX ( Calendario[inicio_mes] )
+			VAR mesCoorte = EDATE ( mes, -3 )
+			RETURN
+			    CALCULATE (
+			        DIVIDE ( SUM ( Coorte[recomprou_90d] ), COUNTROWS ( Coorte ) ),
+			        Coorte[mes_coorte] = mesCoorte
+			    )
+		formatString: 0.0%
+		displayFolder: 3. Clientes
+		lineageTag: 3621e837-f073-566d-b8c4-75b106a3d708
+
+	measure 'Recompra em 90 dias' =
+			VAR r = [Recompra 90d %]
+			RETURN IF ( ISBLANK ( r ), "N/D", FORMAT ( r, "0.0%" ) )
+		displayFolder: 3. Clientes
+		lineageTag: 91797d8f-b0a4-52d9-b892-eb39767c798a
+
+	measure 'Clientes na faixa' =
+			VAR minimo = SELECTEDVALUE ( FaixaFrequencia[compras_min] )
+			VAR maximo = SELECTEDVALUE ( FaixaFrequencia[compras_max] )
+			VAR clientes = CALCULATETABLE ( VALUES ( Pedido[cliente_id] ), KEEPFILTERS ( Pedido[status] = "CONFIRMADO" ) )
+			RETURN
+			    COUNTROWS (
+			        FILTER (
+			            ADDCOLUMNS ( clientes, "@pedidos", [Pedidos vendidos] ),
+			            [@pedidos] >= minimo && [@pedidos] <= maximo
+			        )
+			    )
+		formatString: #,##0
+		displayFolder: 3. Clientes
+		lineageTag: 6d90be33-7a9d-55e0-9136-471efa45befe
+
+	measure 'Valor em estoque' = SUM ( Estoque[valor_total] )
+		formatString: "R$ "#,##0
+		displayFolder: 4. Estoque
+		lineageTag: 84fd5c35-a740-5264-8ad4-55da1196ece3
+
+	measure Lotes = COUNTROWS ( Estoque )
+		formatString: #,##0
+		displayFolder: 4. Estoque
+		lineageTag: 95b4703c-f39d-5f26-bff6-464da786b1ea
+
+	measure 'Lotes vencendo em 30 dias' = CALCULATE ( COUNTROWS ( Estoque ), KEEPFILTERS ( Estoque[faixa_validade_ordem] = 2 ) )
+		formatString: #,##0
+		displayFolder: 4. Estoque
+		lineageTag: 1d684038-15d4-54a2-80f6-bd36c7e50557
+
+	measure 'Valor em risco' = CALCULATE ( [Valor em estoque], KEEPFILTERS ( Estoque[faixa_validade_ordem] = 2 ) )
+		formatString: "R$ "#,##0
+		displayFolder: 4. Estoque
+		lineageTag: bce66a28-2c53-5366-856a-696d1b07fd1f
+
+	measure 'Lotes vencidos' = CALCULATE ( COUNTROWS ( Estoque ), KEEPFILTERS ( Estoque[vencido] = TRUE () ) )
+		formatString: #,##0
+		displayFolder: 4. Estoque
+		lineageTag: 32e0fc07-ce7e-52ae-8ca8-786a7af703fa
+
+	measure 'Insumos abaixo do mínimo' = CALCULATE ( COUNTROWS ( InsumoPosicao ), KEEPFILTERS ( InsumoPosicao[abaixo_minimo] = TRUE () ) )
+		formatString: #,##0
+		displayFolder: 4. Estoque
+		lineageTag: d89098af-af56-5f5d-a5f6-e1fe9ca33889
+
+	measure 'Alerta vencidos' =
+			VAR n = [Lotes vencidos]
+			RETURN FORMAT ( n + 0, "0" ) & " lote(s) vencido(s)"
+		displayFolder: 4. Estoque
+		lineageTag: 2aeeee61-d2ae-5550-a8e3-5b47c4d9778f
+
+	measure 'Alerta mínimo' =
+			VAR n = [Insumos abaixo do mínimo]
+			RETURN FORMAT ( n + 0, "0" ) & " insumos abaixo do mínimo"
+		displayFolder: 4. Estoque
+		lineageTag: 81a61b83-e19c-57aa-a21a-aaf89762ee8d
+
+	measure Atendimentos = COUNTROWS ( Atendimento )
+		formatString: #,##0
+		displayFolder: 5. Canais
+		lineageTag: c7920299-8ceb-5bb5-8463-5b2c35eac259
+
+	measure 'Primeira resposta (min)' = DIVIDE ( SUM ( Atendimento[segundos_primeira_resposta] ), COUNT ( Atendimento[segundos_primeira_resposta] ) ) / 60
+		formatString: 0.0" min"
+		displayFolder: 5. Canais
+		lineageTag: e70c5c22-06ca-5bba-9f8c-dd8bccd82fc5
+
+	measure 'Avaliação média' = AVERAGE ( Atendimento[avaliacao] )
+		formatString: 0.0
+		displayFolder: 5. Canais
+		lineageTag: 333a7115-5baa-560f-b59f-a7d999fd77e0
+
+	measure 'Posição' =
+			VAR fim = MAX ( Calendario[fim_mes] )
+			RETURN "Posição: " & FORMAT ( fim, "dd/MM/yyyy" )
+		displayFolder: 0. Geral
+		lineageTag: 59199835-afdc-5a54-b7c0-81ac3b456cd6
+
+	column Coluna
+		dataType: string
+		isHidden
+		lineageTag: b0d1d4c7-40a2-58ca-b101-ecfd1bb81a99
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Coluna]
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Medidas = calculated
+		mode: import
+		source = ROW ( "Coluna", BLANK () )
+
+	annotation PBI_Id = medidas

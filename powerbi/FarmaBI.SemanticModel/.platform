@@ -1,0 +1,11 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "SemanticModel",
+    "displayName": "FarmaBI"
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "ea5bc11e-6828-5901-b380-b602485bac5d"
+  }
+}
