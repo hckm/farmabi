@@ -1,0 +1,15 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/page/1.4.0/schema.json",
+  "name": "executivo",
+  "displayName": "Executivo e Vendas",
+  "displayOption": "FitToPage",
+  "height": 720,
+  "width": 1280,
+  "visualInteractions": [
+    {
+      "source": "f7626266381a52479534",
+      "target": "e25322c7338e530992f2",
+      "type": "NoFilter"
+    }
+  ]
+}

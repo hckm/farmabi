@@ -1,0 +1,74 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.0.0/schema.json",
+  "name": "0b2b92c5f7b05e09b10c",
+  "position": {
+    "x": 216,
+    "y": 672,
+    "z": 1000,
+    "height": 44,
+    "width": 1048,
+    "tabOrder": 1000
+  },
+  "visual": {
+    "visualType": "textbox",
+    "objects": {
+      "general": [
+        {
+          "properties": {
+            "paragraphs": [
+              {
+                "textRuns": [
+                  {
+                    "value": "Regra funcional: ",
+                    "textStyle": {
+                      "fontSize": "8pt",
+                      "color": "#176C5A",
+                      "fontWeight": "bold"
+                    }
+                  },
+                  {
+                    "value": "cada oportunidade é contada uma única vez, mesmo quando o orçamento tem revisões. Em produção, a conversão deverá considerar uma janela de maturação configurável (ex.: 30 dias).",
+                    "textStyle": {
+                      "fontSize": "8pt",
+                      "color": "#397367"
+                    }
+                  }
+                ],
+                "horizontalTextAlignment": "left"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "visualContainerObjects": {
+      "background": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "border": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "drillFilterOtherVisuals": true
+  }
+}

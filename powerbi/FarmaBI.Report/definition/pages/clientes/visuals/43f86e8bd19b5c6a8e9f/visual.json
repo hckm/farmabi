@@ -1,0 +1,74 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.0.0/schema.json",
+  "name": "43f86e8bd19b5c6a8e9f",
+  "position": {
+    "x": 216,
+    "y": 672,
+    "z": 1000,
+    "height": 44,
+    "width": 1048,
+    "tabOrder": 1000
+  },
+  "visual": {
+    "visualType": "textbox",
+    "objects": {
+      "general": [
+        {
+          "properties": {
+            "paragraphs": [
+              {
+                "textRuns": [
+                  {
+                    "value": "Importante: ",
+                    "textStyle": {
+                      "fontSize": "8pt",
+                      "color": "#176C5A",
+                      "fontWeight": "bold"
+                    }
+                  },
+                  {
+                    "value": "a recompra em 90 dias usa a coorte de novos clientes de três meses antes, cuja janela já terminou (Mai a Jul mostram N/D). Não equivale ao percentual de recorrentes no mês nem indica necessidade clínica de reposição.",
+                    "textStyle": {
+                      "fontSize": "8pt",
+                      "color": "#397367"
+                    }
+                  }
+                ],
+                "horizontalTextAlignment": "left"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "visualContainerObjects": {
+      "background": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "border": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "drillFilterOtherVisuals": true
+  }
+}

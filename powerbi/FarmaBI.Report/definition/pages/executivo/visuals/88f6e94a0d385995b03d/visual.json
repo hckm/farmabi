@@ -1,0 +1,74 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.0.0/schema.json",
+  "name": "88f6e94a0d385995b03d",
+  "position": {
+    "x": 216,
+    "y": 672,
+    "z": 1000,
+    "height": 44,
+    "width": 1048,
+    "tabOrder": 1000
+  },
+  "visual": {
+    "visualType": "textbox",
+    "objects": {
+      "general": [
+        {
+          "properties": {
+            "paragraphs": [
+              {
+                "textRuns": [
+                  {
+                    "value": "Leitura gerencial: ",
+                    "textStyle": {
+                      "fontSize": "8pt",
+                      "color": "#176C5A",
+                      "fontWeight": "bold"
+                    }
+                  },
+                  {
+                    "value": "o indicador de vendas considera apenas pedidos confirmados, sem multiplicar a receita pelo número de fórmulas de cada pedido. Cancelados e devolvidos ficam fora. Dados fictícios.",
+                    "textStyle": {
+                      "fontSize": "8pt",
+                      "color": "#397367"
+                    }
+                  }
+                ],
+                "horizontalTextAlignment": "left"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "visualContainerObjects": {
+      "background": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "border": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "drillFilterOtherVisuals": true
+  }
+}

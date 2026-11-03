@@ -1,0 +1,15 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/page/1.4.0/schema.json",
+  "name": "clientes",
+  "displayName": "Clientes e Recompra",
+  "displayOption": "FitToPage",
+  "height": 720,
+  "width": 1280,
+  "visualInteractions": [
+    {
+      "source": "23f2d33997cf5016a92f",
+      "target": "391e4c54d7f45eb68035",
+      "type": "NoFilter"
+    }
+  ]
+}

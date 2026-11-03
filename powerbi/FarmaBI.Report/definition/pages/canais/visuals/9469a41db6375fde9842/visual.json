@@ -1,0 +1,74 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.0.0/schema.json",
+  "name": "9469a41db6375fde9842",
+  "position": {
+    "x": 216,
+    "y": 672,
+    "z": 1000,
+    "height": 44,
+    "width": 1048,
+    "tabOrder": 1000
+  },
+  "visual": {
+    "visualType": "textbox",
+    "objects": {
+      "general": [
+        {
+          "properties": {
+            "paragraphs": [
+              {
+                "textRuns": [
+                  {
+                    "value": "Definição de tempo: ",
+                    "textStyle": {
+                      "fontSize": "8pt",
+                      "color": "#176C5A",
+                      "fontWeight": "bold"
+                    }
+                  },
+                  {
+                    "value": "a primeira resposta mede o intervalo entre a solicitação e a primeira resposta humana, ponderado pelo número de atendimentos. Respostas automáticas não contam.",
+                    "textStyle": {
+                      "fontSize": "8pt",
+                      "color": "#397367"
+                    }
+                  }
+                ],
+                "horizontalTextAlignment": "left"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "visualContainerObjects": {
+      "background": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "border": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "drillFilterOtherVisuals": true
+  }
+}

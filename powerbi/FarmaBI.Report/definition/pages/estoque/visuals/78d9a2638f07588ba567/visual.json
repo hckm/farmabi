@@ -1,0 +1,74 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.0.0/schema.json",
+  "name": "78d9a2638f07588ba567",
+  "position": {
+    "x": 216,
+    "y": 672,
+    "z": 1000,
+    "height": 44,
+    "width": 1048,
+    "tabOrder": 1000
+  },
+  "visual": {
+    "visualType": "textbox",
+    "objects": {
+      "general": [
+        {
+          "properties": {
+            "paragraphs": [
+              {
+                "textRuns": [
+                  {
+                    "value": "Posição histórica: ",
+                    "textStyle": {
+                      "fontSize": "8pt",
+                      "color": "#176C5A",
+                      "fontWeight": "bold"
+                    }
+                  },
+                  {
+                    "value": "estoque exibido no fechamento do mês, sem filtro de canal; a validade é comparada com a data da posição. Os alertas são gerenciais: a decisão de bloqueio, segregação ou descarte é do farmacêutico responsável.",
+                    "textStyle": {
+                      "fontSize": "8pt",
+                      "color": "#397367"
+                    }
+                  }
+                ],
+                "horizontalTextAlignment": "left"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "visualContainerObjects": {
+      "background": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "border": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "drillFilterOtherVisuals": true
+  }
+}
