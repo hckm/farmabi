@@ -1,7 +1,8 @@
 # FarmaBI — Documentação do projeto
 
 > **Projeto:** Business Intelligence para farmácia de manipulação
-> **Stack:** Power BI (Desktop / Service) + PostgreSQL
+> **Stack:** Power BI Desktop (projeto `.pbip`, modo Importação) + PostgreSQL 16 em Docker
+> **Escopo de dados:** uma única unidade (sem filiais), período de análise **mai a out/2026**
 > **Situação:** primeira entrega com **dados demonstrativos / fictícios**; metas e valores devem ser homologados com a farmácia
 > **Idioma e formatos:** pt-BR, moeda BRL (R$), datas `dd/mm/aaaa`
 
@@ -81,7 +82,7 @@ flowchart LR
     PG --> PQ[Power Query<br/>tratamento]
     PQ --> MOD[Modelo Power BI<br/>relacionamentos + DAX]
     MOD --> REL[Relatório<br/>5 páginas]
-    REL -. publicação, se aplicável .-> SVC[Power BI Service]
+    REL --> PDF[PDF das páginas<br/>docs/evidencias]
 ```
 
 | Camada | Responsabilidade |
@@ -92,13 +93,15 @@ flowchart LR
 | Medidas DAX | Todas as regras de cálculo dos indicadores, documentadas e reutilizadas entre as páginas. |
 | Relatório | Apresentação: cartões, gráficos, tabelas, segmentações e alertas. |
 
-> **Atenção (Power BI Service):** para atualizar no Service um PostgreSQL que roda em máquina local é preciso um
-> *on-premises data gateway*. Um banco hospedado em nuvem e acessível pelo Service dispensa o gateway.
+> **Sem Power BI Service:** a conta disponível é gratuita, então a entrega é o projeto `.pbip` versionado, a
+> demonstração ao vivo no Desktop e o PDF das cinco páginas em `docs/evidencias/`. Publicar exigiria licença Pro
+> e, para um PostgreSQL local, um *on-premises data gateway*.
 
 ### 3.1 Ferramentas
 
-Power BI Desktop, Power Query, DAX, PostgreSQL, SQL, pgAdmin ou DBeaver, Power BI Service (se aplicável),
-GitHub, Mermaid e documentação em Word/PDF.
+Power BI Desktop (PBIP: modelo em TMDL e relatório em PBIR), Power Query, DAX, PostgreSQL 16, Docker Desktop,
+Python 3 (gerador de dados e de projeto, só biblioteca padrão), DBeaver ou pgAdmin, GitHub, Mermaid e
+documentação em Word/PDF.
 
 ---
 
@@ -109,7 +112,7 @@ GitHub, Mermaid e documentação em Word/PDF.
 | Tabela | Tipo | Granularidade | Chave |
 |---|---|---|---|
 | `dim_calendario` | Dimensão | Um dia | `data` |
-| `dim_filial` | Dimensão | Uma unidade | `filial_id` |
+| `dim_atendente` | Dimensão | Um atendente | `atendente_id` |
 | `dim_canal` | Dimensão | Um canal (WhatsApp, Balcão, Site) | `canal_id` |
 | `dim_cliente` | Dimensão | Um cliente único | `cliente_id` |
 | `dim_insumo` | Dimensão | Uma matéria-prima ou embalagem | `insumo_id` |
@@ -119,7 +122,7 @@ GitHub, Mermaid e documentação em Word/PDF.
 | `fato_orcamento_versao` | Fato | Uma versão de um orçamento | `orcamento_versao_id` |
 | `fato_pedido` | Fato | Um pedido comercial | `pedido_id` |
 | `fato_pedido_item` | Fato | Uma fórmula de um pedido | `pedido_item_id` |
-| `fato_saldo_estoque` | Fato (snapshot) | Um lote × filial × depósito × data de posição | composta |
+| `fato_saldo_estoque` | Fato (snapshot) | Um lote × data de posição (com depósito) | composta |
 
 ### 4.2 Diagrama
 
@@ -129,10 +132,9 @@ erDiagram
     dim_calendario ||--o{ fato_oportunidade : criada_em
     dim_calendario ||--o{ fato_atendimento : iniciado_em
     dim_calendario ||--o{ fato_saldo_estoque : data_posicao
-    dim_filial ||--o{ fato_pedido : ""
-    dim_filial ||--o{ fato_oportunidade : ""
-    dim_filial ||--o{ fato_atendimento : ""
-    dim_filial ||--o{ fato_saldo_estoque : ""
+    dim_atendente ||--o{ fato_pedido : ""
+    dim_atendente ||--o{ fato_oportunidade : ""
+    dim_atendente ||--o{ fato_atendimento : ""
     dim_canal ||--o{ fato_pedido : ""
     dim_canal ||--o{ fato_oportunidade : ""
     dim_canal ||--o{ fato_atendimento : ""
@@ -151,7 +153,7 @@ erDiagram
 | Coluna | Tipo sugerido | Observação |
 |---|---|---|
 | `pedido_id` | `varchar` / `bigint` | PK |
-| `cliente_id`, `filial_id`, `canal_id` | FK | |
+| `cliente_id`, `canal_id` | FK | |
 | `oportunidade_id` | FK, opcional | Liga o pedido ao orçamento que o originou. |
 | `atendente_id` | opcional | |
 | `data_venda` | `date` | Data usada para filtrar vendas. |
@@ -162,7 +164,7 @@ erDiagram
 
 | Coluna | Observação |
 |---|---|
-| `oportunidade_id`, `cliente_id`, `filial_id`, `canal_id`, `atendente_id` | |
+| `oportunidade_id`, `cliente_id`, `canal_id`, `atendente_id` | |
 | `criada_em` | Data usada para filtrar orçamentos. |
 | `data_envio_primeiro_orcamento`, `data_aprovacao` | Base do tempo da primeira cotação. |
 | `status` | `PENDENTE`, `CONVERTIDA`, `PERDIDA` (mutuamente exclusivos). |
@@ -173,7 +175,7 @@ erDiagram
 
 | Coluna | Observação |
 |---|---|
-| `atendimento_id`, `cliente_id`, `filial_id`, `canal_id`, `atendente_id` | |
+| `atendimento_id`, `cliente_id`, `canal_id`, `atendente_id` | |
 | `iniciado_em`, `primeira_resposta_humana_em`, `encerrado_em` | `timestamp`; mensagens automáticas não contam como resposta humana. |
 | `status`, `transferencias`, `avaliacao` | |
 
@@ -184,7 +186,7 @@ associação, sem multiplicar a contagem de atendimentos.
 
 | Coluna | Observação |
 |---|---|
-| `data_posicao`, `filial_id`, `deposito_id`, `insumo_id`, `lote_id` | Chave composta. |
+| `data_posicao`, `lote_id` (+ `deposito`) | Chave `(data_posicao, lote_id)`. |
 | `data_validade`, `data_recebimento` | |
 | `saldo_fisico`, `saldo_reservado`, `saldo_bloqueado` | Na unidade de medida do insumo. |
 | `custo_unitario` | `numeric`; valorização por lote. |
@@ -201,38 +203,69 @@ associação, sem multiplicar a contagem de atendimentos.
 
 - Esquema estrela: dimensões filtram fatos em **direção única**; evitar relacionamentos bidirecionais.
 - `dim_calendario` marcada como **tabela de datas**, com relacionamentos ativos/inativos para cada data dos fatos.
-- Medidas em uma tabela dedicada (ex.: `_Medidas`), organizadas em pastas por visão.
+- Medidas na tabela dedicada `Medidas`, organizadas em pastas por visão (1. Executivo … 5. Canais).
 - Divisões sempre com `DIVIDE`, que devolve vazio quando o denominador é zero; o visual exibe **N/D**.
-- Segmentações: **Período**, **Filial** e **Canal**. Na página de Estoque, o canal não se aplica: ocultar a
+- Segmentações: **Período** (seleção única, padrão Out/2026) e **Canal** ("Todos" ou um canal), sincronizadas
+  entre as páginas. Na página de Estoque, o canal não se aplica: ocultar a
   segmentação ou desligar a interação, e tratar o período como **data de posição**.
 - Toda página exibe o aviso **“Dados demonstrativos / fictícios”**, a data de referência e a última atualização.
 
-### 5.1 Medidas de referência (sugestão)
+### 5.1 Implementação
+
+O projeto fica em `powerbi/FarmaBI.pbip`, em texto (modelo semântico em **TMDL** e relatório em **PBIR**), gerado
+por `tools/powerbi/gerar_modelo.py` e `tools/powerbi/gerar_relatorio.py`. O modelo usa **Importação** a partir de
+`PostgreSQL.Database(Servidor, BancoDados)`, com os parâmetros `Servidor = "localhost:5433"` e
+`BancoDados = "farmabi"`. Nenhuma credencial fica no projeto.
+
+| Tabela no modelo | Origem no PostgreSQL |
+|---|---|
+| Calendario, Canal, Atendente, Cliente, Insumo | `dim_*` |
+| Pedido, PedidoItem, Oportunidade, OrcamentoVersao, Atendimento | `fato_*` |
+| Estoque | `vw_saldo_estoque` (dias para vencer e faixa calculados **a partir da data de posição**) |
+| InsumoPosicao | `vw_insumo_posicao` (saldo disponível × estoque mínimo por insumo e posição) |
+| Coorte | `vw_coorte_recompra` (coorte do mês da primeira compra e flag de recompra em 90 dias) |
+| EtapaFunil, FaixaFrequencia | `aux_*` (tabelas desconectadas para o funil e a frequência) |
+
+### 5.2 Medidas principais
 
 ```dax
-Vendas Líquidas =
-CALCULATE ( SUM ( fato_pedido[valor_liquido] ), fato_pedido[status] = "CONFIRMADO" )
+Vendas líquidas =
+CALCULATE ( SUM ( Pedido[valor_liquido] ), KEEPFILTERS ( Pedido[status] = "CONFIRMADO" ) )
 
-Pedidos Vendidos =
-CALCULATE ( DISTINCTCOUNT ( fato_pedido[pedido_id] ), fato_pedido[status] = "CONFIRMADO" )
+Pedidos vendidos =
+CALCULATE ( DISTINCTCOUNT ( Pedido[pedido_id] ), KEEPFILTERS ( Pedido[status] = "CONFIRMADO" ) )
 
-Ticket Médio = DIVIDE ( [Vendas Líquidas], [Pedidos Vendidos] )
+Ticket médio = DIVIDE ( [Vendas líquidas], [Pedidos vendidos] )
 
-Vendas Mês Anterior = CALCULATE ( [Vendas Líquidas], DATEADD ( dim_calendario[data], -1, MONTH ) )
+Orçamentos gerados = DISTINCTCOUNT ( Oportunidade[oportunidade_id] )
 
-Crescimento % = DIVIDE ( [Vendas Líquidas], [Vendas Mês Anterior] ) - 1
+Taxa de conversão = DIVIDE ( [Convertidos], [Orçamentos gerados] )
 
-Oportunidades Geradas = DISTINCTCOUNT ( fato_oportunidade[oportunidade_id] )
-
-Oportunidades Convertidas =
-CALCULATE ( [Oportunidades Geradas], fato_oportunidade[status] = "CONVERTIDA" )
-
-Taxa de Conversão % = DIVIDE ( [Oportunidades Convertidas], [Oportunidades Geradas] )
+Recompra 90d % =
+VAR mes = MAX ( Calendario[inicio_mes] )
+VAR mesCoorte = EDATE ( mes, -3 )
+RETURN
+    CALCULATE (
+        DIVIDE ( SUM ( Coorte[recomprou_90d] ), COUNTROWS ( Coorte ) ),
+        Coorte[mes_coorte] = mesCoorte
+    )
 ```
 
-> As medidas acima são ponto de partida. Regras como tratamento de devoluções, janela de maturação de
-> orçamentos e política de atribuição de canal devem ser confirmadas com a farmácia antes de fechadas.
-> Note que `Crescimento %` precisa tratar o caso sem mês anterior (ex.: `IF ( ISBLANK ( [Vendas Mês Anterior] ), BLANK (), ... )`).
+Também ficam no modelo, sem aparecer nas páginas: Pedidos cancelados, Pedidos devolvidos, Valor devolvido,
+Descontos concedidos, Fórmulas vendidas, Taxa de perda, Horas até a 1ª cotação e Avaliação média.
+
+> **Atenção:** o DAX não diferencia maiúsculas de minúsculas. Uma variável com o nome de uma tabela (ex.:
+> `VAR coorte` e a tabela `Coorte`) quebra a medida com *Missing_References*.
+
+### 5.3 Regras definidas para esta entrega
+
+| Tema | Regra |
+|---|---|
+| Conversão | Pedidos convertidos ÷ orçamentos criados **no mesmo mês**. A janela de maturação de 30 dias fica como evolução. |
+| Recompra 90d | Mostrada no mês M para a coorte de novos clientes de **M−3** (janela já encerrada). Mai a Jul exibem **N/D**. |
+| Cancelados e devolvidos | Existem no banco (~3% e ~2% a mais sobre os confirmados), mas ficam fora de todos os indicadores. |
+| Linha de vendas e novos × recorrentes | Sempre os 6 meses (interação do Período desligada nesses visuais). |
+| Canal | Cada cliente compra num único canal; Estoque não tem segmentação de canal. |
 
 ---
 
@@ -245,7 +278,7 @@ Taxa de Conversão % = DIVIDE ( [Oportunidades Convertidas], [Oportunidades Gera
 | Vendas líquidas comerciais | Valor vendido − descontos − devoluções/cancelamentos aplicáveis | Não é receita líquida contábil. |
 | Pedidos vendidos | `COUNT(DISTINCT pedido_id)` válidos | Pedido com 2 fórmulas conta 1 vez. |
 | Ticket médio | `vendas_liquidas / pedidos_vendidos` | Sem pedidos → N/D. |
-| Crescimento (%) | `(vendas_atual / vendas_anterior − 1) × 100` | Mesmo recorte de filial/canal. |
+| Crescimento (%) | `(vendas_atual / vendas_anterior − 1) × 100` | Mesmo recorte de canal. |
 | Clientes compradores | `COUNT(DISTINCT cliente_id)` | Complementar. |
 | Fórmulas vendidas | Quantidade de itens válidos | ≠ pedidos. |
 | Atingimento de meta (%) | `vendas / meta × 100` | Só se houver metas cadastradas. |
@@ -353,7 +386,7 @@ para SLA; definir atribuição em transferências entre atendentes.
 > **Todos os valores são fictícios** e servem para validar o modelo e os relatórios. A carga deve gerar
 > **registros** cujas agregações reproduzam estes números, e não totais fixos.
 
-### 8.1 Por mês e canal (todas as filiais)
+### 8.1 Por mês e canal
 
 | Mês | Canal | Vendas líquidas (R$) | Pedidos | Orçamentos | Atendimentos | Compradores | Novos | 1ª resposta (min) | Recompra 90d (%) |
 |---|---|---:|---:|---:|---:|---:|---:|---:|---:|
@@ -373,8 +406,7 @@ conversão ≈ 68,87% · atendimentos 2.160 · crescimento sobre setembro (R$ 16
 Compradores (946) e novos (287) somados por canal só valem como total global se nenhum cliente comprar em mais de
 um canal; no modelo, o total global vem de `DISTINCTCOUNT(cliente_id)`.
 
-A divisão 62% matriz / 38% unidade 02 do protótipo original é apenas simplificação: na carga, atribuir a filial a
-cada registro e agregar depois.
+A farmácia tem uma única unidade: não há dimensão de filial.
 
 ### 8.2 Frequência de compras — outubro/2026
 
@@ -384,7 +416,7 @@ cada registro e agregar depois.
 | Balcão | 188 | 61 | 16 |
 | Site | 99 | 25 | 4 |
 
-### 8.3 Estoque (todas as filiais)
+### 8.3 Estoque
 
 | Posição | Valor em estoque | Abaixo do mínimo | Vencendo em 30 dias | Valor em risco | Vencidos |
 |---|---:|---:|---:|---:|---:|
@@ -413,6 +445,20 @@ ao total de oportunidades perdidas do recorte.
 
 ---
 
+### 8.5 Como os dados fictícios são gerados
+
+`tools/gerar_dados.py` gera `db/init/02_seed.sql` de forma determinística (semente fixa, valores em centavos) a partir
+dos números de `tools/referencia.py`, copiados do protótipo. O teste `tools/tests/test_gerador.py` confere que os
+agregados batem com a referência e que a regeneração é idêntica byte a byte; `tools/conferir_banco.py` faz a mesma
+conferência direto no banco.
+
+Diferenças conhecidas em relação ao protótipo:
+
+- **Frequência de Mai a Jul:** no protótipo, `1×f1 + 2×f2 + 3×f3` não fecha com o número de pedidos desses meses.
+  O gerador mantém os pedidos e ajusta a distribuição de frequência (`frequencia_ajustada`).
+- **Recompra 90d:** a taxa depende de clientes inteiros, então alguns canais ficam a até ±1 cliente do protótipo
+  (ex.: Site, coorte de Mai, 37,8% contra 38,7%).
+
 ## 9. Validação e critérios de aceite
 
 A validação compara cada medida DAX com uma **consulta SQL de referência** no PostgreSQL, por exemplo:
@@ -427,32 +473,36 @@ AND    data_venda >= DATE '2026-10-01'
 AND    data_venda <  DATE '2026-11-01';
 ```
 
-### 9.1 Consistência (outubro/2026, sem filtros de filial/canal)
+Os itens marcados foram conferidos no Power BI Desktop e por `tools/conferir_banco.py` em 02/11/2026; o PDF
+das cinco páginas está em [evidencias/FarmaBI_paginas.pdf](evidencias/FarmaBI_paginas.pdf).
 
-- [ ] Vendas líquidas = **R$ 185.400**
-- [ ] Pedidos = **1.248**
-- [ ] Ticket médio ≈ **R$ 148,56**
-- [ ] Orçamentos = **1.812**
-- [ ] Conversão ≈ **68,87%**
-- [ ] Atendimentos = **2.160**
-- [ ] Estoque em 31/10/2026 = **R$ 283.400**
-- [ ] Lotes vencendo em 30 dias = **17**
-- [ ] Soma das vendas por canal = total do período
-- [ ] Convertidas + perdidas + pendentes = geradas
-- [ ] Pedidos não aumentam ao cruzar com itens/fórmulas
-- [ ] Cliente que compra em dois canais não é duplicado no total
-- [ ] Recompra 90d usa apenas coortes maduras
-- [ ] Lotes vencidos não aparecem como disponíveis
-- [ ] Indicadores sem denominador exibem N/D
+### 9.1 Consistência (outubro/2026, canal "Todos")
+
+- [x] Vendas líquidas = **R$ 185.400**
+- [x] Pedidos = **1.248**
+- [x] Ticket médio ≈ **R$ 148,56**
+- [x] Orçamentos = **1.812**
+- [x] Conversão ≈ **68,87%**
+- [x] Atendimentos = **2.160**
+- [x] Estoque em 31/10/2026 = **R$ 283.400**
+- [x] Lotes vencendo em 30 dias = **17**
+- [x] Soma das vendas por canal = total do período
+- [x] Convertidas + perdidas + pendentes = geradas
+- [x] Pedidos não aumentam ao cruzar com itens/fórmulas
+- [ ] Cliente que compra em dois canais não é duplicado no total (não ocorre nos dados fictícios: cada
+  cliente compra num único canal; o modelo já usa `DISTINCTCOUNT`)
+- [x] Recompra 90d usa apenas coortes maduras
+- [x] Lotes vencidos não aparecem como disponíveis
+- [x] Indicadores sem denominador exibem N/D
 
 ### 9.2 Funcionais
 
-- [ ] Navegação entre as cinco páginas, com Executivo e Vendas como inicial
-- [ ] Período padrão: outubro/2026
-- [ ] Segmentações de período, filial e canal atualizam cartões, gráficos e tabelas
-- [ ] Canal não distorce a página de Estoque
-- [ ] Todos os cartões com título, valor formatado em pt-BR e contexto (mês, posição ou janela)
-- [ ] Aviso “Dados demonstrativos / fictícios” em todas as páginas
+- [x] Navegação entre as cinco páginas, com Executivo e Vendas como inicial
+- [x] Período padrão: outubro/2026
+- [x] Segmentações de período e canal atualizam cartões, gráficos e tabelas
+- [x] Canal não distorce a página de Estoque
+- [x] Todos os cartões com título, valor formatado em pt-BR e contexto (mês, posição ou janela)
+- [x] Aviso “Dados demonstrativos / fictícios” em todas as páginas
 - [ ] Mensagem adequada quando o filtro não retorna registros
 
 ---
@@ -461,7 +511,8 @@ AND    data_venda <  DATE '2026-11-01';
 
 - Nenhum dado real de paciente no ambiente demonstrativo.
 - Painéis gerais não exibem tratamentos, diagnósticos ou prescrições identificáveis.
-- Credenciais do PostgreSQL **fora** do repositório e do arquivo `.pbix` versionado.
+- Credenciais do PostgreSQL **fora** do repositório e do projeto `.pbip` versionado (o Desktop guarda a credencial em
+  `.pbi/localSettings.json`, ignorado pelo git); o Power BI usa o role somente leitura `farmabi_leitura`.
 - Ao integrar com o ERP: usuário de banco somente leitura, permissões por perfil e, se publicado, segurança em nível
   de linha (RLS) no Power BI quando necessário.
 - Conformidade com a **LGPD (Lei 13.709/2018)**; controles de manipulação e rastreabilidade seguem a
@@ -493,6 +544,6 @@ Responsáveis e prazos estão na proposta da Entrega 1 ([Entrega1_FarmaBI_Grupo9
 2. **Rentabilidade:** margem bruta e de contribuição, custo por fórmula, descontos, lucratividade por categoria.
 3. **Qualidade e Rastreabilidade:** liberações, reprovações, não conformidades, rastreio de insumos por lote.
 4. **Análises avançadas:** previsão de demanda de insumos, coortes, RFM, desempenho por atendente, alertas
-   configuráveis, receita × meta por filial.
+   configuráveis, receita × meta.
 
 O modelo estrela deve receber essas extensões com novas tabelas fato, reaproveitando as dimensões existentes.
